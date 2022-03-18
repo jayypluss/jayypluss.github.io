@@ -36,7 +36,7 @@ export default class MainScene {
     })
 
     this.scene = new Scene(this.engine)
-    this.scene.debugLayer.show()
+    // this.scene.debugLayer.show()
   }
 
   createCameras() {
