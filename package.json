@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "description": "jayypluss webpage",
   "main": "src/index.ts",
-  "repository": "https://git.heroku.com/jayypluss.git",
+  "repository": "https://github.com/jayypluss/jayypluss.github.io.git",
+  "homepage": "https://jayypluss.github.io/",
   "author": "jayypluss <jonathanfk1@gmail.com>",
   "license": "MIT",
   "private": true,
@@ -11,6 +12,7 @@
     "start": "npx webpack serve --config webpack.dev.js",
     "build:dev": "npx webpack --config webpack.dev.js",
     "build": "npx webpack --config webpack.prod.js",
+    "deploy": "gh-pages -b main -d build",
     "lint": "npx eslint . --ext .ts,.tsx"
   },
   "devDependencies": {
@@ -33,6 +35,7 @@
     "@babylonjs/materials": "^4.2.2",
     "clean-webpack-plugin": "^4.0.0",
     "css-loader": "^6.7.1",
+    "gh-pages": "^3.2.3",
     "html-webpack-plugin": "^5.5.0",
     "source-map-loader": "^3.0.1",
     "style-loader": "^3.3.1",
