@@ -1,7 +1,6 @@
-# Virtual Environment Visualizer
+# jayyplus
 
 To run the project:
 
-1. Change `host` property on `webpack.config.js` file to match your machine's IP.
-2. Run `yarn install`
-3. Run `yarn run dev`
+1. Run `yarn install`
+2. Run `yarn start`

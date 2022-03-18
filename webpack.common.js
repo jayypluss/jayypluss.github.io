@@ -2,6 +2,7 @@ const path = require("path");
 const fs = require("fs");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const Dotenv = require('dotenv-webpack')
 
 // App directory
 const appDirectory = fs.realpathSync(process.cwd());
@@ -57,5 +58,6 @@ module.exports = {
       inject: true,
       template: path.resolve(appDirectory, "src/index.html"),
     }),
+    new Dotenv()
   ],
 };
