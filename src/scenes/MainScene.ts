@@ -4,10 +4,10 @@ import {
   Camera,
   Engine,
   FreeCamera,
-  HemisphericLight,
+  HemisphericLight, Mesh,
   PointerEventTypes,
-  Scene,
-  UniversalCamera
+  Scene, StandardMaterial, Texture,
+  UniversalCamera, Vector4
 } from "@babylonjs/core"
 import {Vector3} from '@babylonjs/core/Maths/math.vector'
 import '@babylonjs/inspector'
@@ -36,14 +36,14 @@ export default class MainScene {
     })
 
     this.scene = new Scene(this.engine)
-    // this.scene.debugLayer.show()
+    this.scene.debugLayer.show()
   }
 
   createCameras() {
-    this.freeCam = new FreeCamera('freeCam', new Vector3(0, 200, 0), this.scene)
+    this.freeCam = new FreeCamera('freeCam', Vector3.Zero(), this.scene)
 
-    this.universalCam = new UniversalCamera('universalCam', new Vector3(0, 200, 0), this.scene)
-    this.universalCam.speed = 8
+    this.universalCam = new UniversalCamera('universalCam', new Vector3(0, 5, 0), this.scene)
+    this.universalCam.speed = 1
     this.universalCam.keysUp.push(87)
     this.universalCam.keysLeft.push(65)
     this.universalCam.keysDown.push(83)
@@ -59,6 +59,7 @@ export default class MainScene {
         Vector3.Zero(),
         this.scene,
     )
+    // this.arcRotateCam.fov = 0.1
 
     this.deviceOrientationCam = new DeviceOrientationCamera(
         'deviceOrientationCam',
@@ -74,7 +75,7 @@ export default class MainScene {
 
     this.scene.onPointerObservable.add((pointerWheelEvent: any) => {
       console.log('Pointer Wheel Event: ', pointerWheelEvent)
-    }, PointerEventTypes.POINTERWHEEL);
+    }, PointerEventTypes.POINTERWHEEL)
 
 
     // Page Loaded
@@ -97,6 +98,25 @@ export default class MainScene {
 
   }
 
+  private mountScene() {
+    const mat = new StandardMaterial('mat', this.scene)
+    mat.diffuseTexture = new Texture('https://assets.babylonjs.com/environments/spriteAtlas.png', this.scene)
+
+    const columns = 6
+    const rows = 4
+
+    //Face UVs
+    const faceUV = []
+    for (let i = 0; i < 12; i++) {
+      faceUV[i] = new Vector4((i % 6) / columns, Math.floor(i / 6) / rows, (1 + i % 6) / columns, 1 / rows + Math.floor(i / 6) / rows)
+    }
+
+    const dodecahedron = Mesh.CreatePolyhedron('dodecahedron', {type: 2, faceUV: faceUV}, this.scene)
+    dodecahedron.material = mat
+
+    if (this.scene.activeCamera instanceof UniversalCamera) this.scene.activeCamera.target = dodecahedron.position
+  }
+
   // Runs Engine's Render Loop
   runRenderLoop() {
     this.engine.runRenderLoop(() => {
@@ -112,6 +132,9 @@ export default class MainScene {
     this.createHemisphericLight()
     this.createCameras()
     this.activateCamera(this.arcRotateCam)
+
+    this.mountScene()
+
     this.runRenderLoop()
     this.addEventListeners()
   }
@@ -126,14 +149,14 @@ export default class MainScene {
   }
 
   private activateCamera(camera: Camera): Camera {
-    if (camera instanceof ArcRotateCamera) {
-      camera.lowerRadiusLimit = 50
-      camera.upperRadiusLimit = 200
-    }
+    // if (camera instanceof ArcRotateCamera) {
+    //   camera.lowerRadiusLimit = 50
+    //   camera.upperRadiusLimit = 200
+    //   camera.inputs.attached.mousewheel.detachControl()
+    // }
 
     this.scene.activeCamera = camera
     this.scene.activeCamera.attachControl(this.canvas, true)
-    this.scene.activeCamera.inputs.attached.mousewheel.detachControl()
 
     return camera
   }
