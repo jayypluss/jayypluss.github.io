@@ -12,7 +12,7 @@
     "start": "npx webpack serve --config webpack.dev.js",
     "build:dev": "npx webpack --config webpack.dev.js",
     "build": "npx webpack --config webpack.prod.js",
-    "deploy": "gh-pages -b main -d build",
+    "deploy": "gh-pages -b main -d dist",
     "lint": "npx eslint . --ext .ts,.tsx"
   },
   "devDependencies": {
