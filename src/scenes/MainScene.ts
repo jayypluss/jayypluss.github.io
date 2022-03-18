@@ -36,7 +36,7 @@ export default class MainScene {
     })
 
     this.scene = new Scene(this.engine)
-    if (process.env.NODE_ENV == 'development') this.scene.debugLayer.show()
+    if (process.env.NODE_ENV === 'development') this.scene.debugLayer.show()
   }
 
   createCameras() {
