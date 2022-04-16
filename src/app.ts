@@ -1,4 +1,3 @@
-
 import MainScene from "./scenes/MainScene"
 import {Scene} from "@babylonjs/core"
 
