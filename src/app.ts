@@ -2,6 +2,7 @@ import {Engine, Scene} from "@babylonjs/core"
 import {MainGameScene} from "./scenes/MainGameScene"
 import '../assets/css/global.css'
 import {LoadingScene} from "./scenes/LoadingScene";
+import {Vector3} from "@babylonjs/core/Maths/math.vector";
 
 enum GameState { FIRST_LOAD = 0, GAME = 1, LOSE = 2, CUTSCENE = 3 }
 
@@ -34,6 +35,7 @@ export class App {    // General Entire Application
             this._scene.dispose()
             this._scene = mainGameScene
             this._state = GameState.GAME
+            this._scene.getMeshByName("outer").position = new Vector3(0, 3, 0)
         })
 
         // run the main render loop
