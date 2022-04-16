@@ -1,5 +1,3 @@
-import MainScene from "./scenes/MainScene"
-import "../assets/css/global.css"
-import "../assets/images/loader.gif"
+import {App} from "./app"
 
-new MainScene().createScene()
+new App()

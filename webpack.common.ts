@@ -1,11 +1,11 @@
-const path = require("path");
-const fs = require("fs");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+import * as path from 'path'
+import * as fs from 'fs'
+const HtmlWebpackPlugin = require("html-webpack-plugin")
+const { CleanWebpackPlugin } = require("clean-webpack-plugin")
 const Dotenv = require('dotenv-webpack')
 
 // App directory
-const appDirectory = fs.realpathSync(process.cwd());
+const appDirectory = fs.realpathSync(process.cwd())
 
 module.exports = {
   entry: path.resolve(appDirectory, "src/index.ts"),
@@ -60,4 +60,4 @@ module.exports = {
     }),
     new Dotenv()
   ],
-};
+}

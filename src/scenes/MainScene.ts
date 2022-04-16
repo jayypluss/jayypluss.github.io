@@ -5,7 +5,7 @@ import {
   Engine,
   FreeCamera,
   HemisphericLight, Mesh,
-  PointerEventTypes,
+  PointerEventTypes, PointerInfo,
   Scene, StandardMaterial, Texture,
   UniversalCamera, Vector4
 } from "@babylonjs/core"
@@ -15,12 +15,16 @@ import '@babylonjs/loaders/glTF'
 import '@babylonjs/core/Debug/debugLayer'
 import '@babylonjs/loaders'
 
+import "../../assets/css/global.css"
+import "../../assets/images/loader.gif"
+
 const loaderGif = require('../../assets/images/loader.gif')
+// const babylonExampleFile = require('../../assets/babylonFiles/example.babylon')
 
 export default class MainScene {
-  private canvas: HTMLCanvasElement
-  private engine: Engine
-  private scene: Scene
+  private readonly canvas: HTMLCanvasElement
+  private readonly engine: Engine
+  private readonly scene: Scene
   private universalCam: UniversalCamera
   private freeCam: FreeCamera
   private arcRotateCam: ArcRotateCamera
@@ -36,7 +40,6 @@ export default class MainScene {
     })
 
     this.scene = new Scene(this.engine)
-    if (process.env.NODE_ENV === 'development') this.scene.debugLayer.show()
   }
 
   createCameras() {
@@ -73,7 +76,7 @@ export default class MainScene {
       this.engine.resize()
     })
 
-    this.scene.onPointerObservable.add((pointerWheelEvent: any) => {
+    this.scene.onPointerObservable.add((pointerWheelEvent: PointerInfo) => {
       console.log('Pointer Wheel Event: ', pointerWheelEvent)
     }, PointerEventTypes.POINTERWHEEL)
 
@@ -96,9 +99,23 @@ export default class MainScene {
         }
     })
 
+    // hide/show the Inspector
+    window.addEventListener("keydown", (ev) => {
+      // Shift+Ctrl+Alt+I
+      if (process.env.NODE_ENV === 'development' && ev.shiftKey && ev.ctrlKey && ev.altKey && ev.keyCode === 73)
+        this.scene.debugLayer.isVisible() ? this.scene.debugLayer.hide() : this.scene.debugLayer.show()
+
+
+    })
   }
 
   private mountScene() {
+
+    // SceneLoader.AppendAsync("./assets/babylonFiles", "example.babylon", this.scene).then((scene) => {
+    //   // do something with the scene
+    //   console.log(scene)
+    // })
+
     const mat = new StandardMaterial('mat', this.scene)
     mat.diffuseTexture = new Texture('https://assets.babylonjs.com/environments/spriteAtlas.png', this.scene)
 
@@ -107,14 +124,17 @@ export default class MainScene {
 
     //Face UVs
     const faceUV = []
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 12; i++)
       faceUV[i] = new Vector4((i % 6) / columns, Math.floor(i / 6) / rows, (1 + i % 6) / columns, 1 / rows + Math.floor(i / 6) / rows)
-    }
+
 
     const dodecahedron = Mesh.CreatePolyhedron('dodecahedron', {type: 2, faceUV: faceUV}, this.scene)
     dodecahedron.material = mat
 
     if (this.scene.activeCamera instanceof UniversalCamera) this.scene.activeCamera.target = dodecahedron.position
+
+
+
   }
 
   // Runs Engine's Render Loop
@@ -125,10 +145,12 @@ export default class MainScene {
     })
   }
 
-  async createScene() {
-    console.log('Creating Scene')
+  async createScene(): Promise<Scene> {
+    console.log('Creating Main Scene')
+
     addLoader(createLoader())
     toggleLoader(true)
+
     this.createHemisphericLight()
     this.createCameras()
     this.activateCamera(this.arcRotateCam)
@@ -137,6 +159,8 @@ export default class MainScene {
 
     this.runRenderLoop()
     this.addEventListeners()
+
+    return this.scene
   }
 
   private createHemisphericLight(): HemisphericLight {

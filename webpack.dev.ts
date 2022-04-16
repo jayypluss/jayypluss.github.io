@@ -1,7 +1,7 @@
-const { merge } = require('webpack-merge')
-const common = require('./webpack.common.js')
-const path = require('path')
-const fs = require('fs')
+import {merge} from 'webpack-merge'
+import * as path from 'path'
+import * as fs from 'fs'
+import * as common from './webpack.common'
 
 // App directory
 const appDirectory = fs.realpathSync(process.cwd())
