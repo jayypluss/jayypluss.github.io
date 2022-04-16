@@ -1,4 +1,4 @@
-import {Mesh, Scene, ShadowGenerator, TransformNode, UniversalCamera} from "@babylonjs/core"
+import {Mesh, Quaternion, Scene, ShadowGenerator, TransformNode, UniversalCamera} from "@babylonjs/core"
 import {Vector3} from "@babylonjs/core/Maths/math.vector"
 
 export class Player extends TransformNode {
@@ -23,7 +23,11 @@ export class Player extends TransformNode {
     private static readonly DASH_TIME: number = 10 //how many frames the dash lasts
     private static readonly DOWN_TILT: Vector3 = new Vector3(0.8290313946973066, 0, 0)
     private static readonly ORIGINAL_TILT: Vector3 = new Vector3(0.5934119456780721, 0, 0)
+
     public dashTime = 0
+
+    private _deltaTime = 0
+
 
     constructor(assets: any, scene: Scene, shadowGenerator: ShadowGenerator, input?: any) {
         super("player", scene)
@@ -89,6 +93,8 @@ export class Player extends TransformNode {
     }
 
     private _updateFromControls(): void {
+        this._deltaTime = this.scene.getEngine().getDeltaTime() / 1000.0
+
         this._moveDirection = Vector3.Zero() // vector that holds movement information
         this._h = this._input.horizontal //x-axis
         this._v = this._input.vertical //z-axis
@@ -99,7 +105,7 @@ export class Player extends TransformNode {
         const correctedVertical = fwd.scaleInPlace(this._v)
         const correctedHorizontal = right.scaleInPlace(this._h)
 
-//movement based off of camera's view
+        //movement based off of camera's view
         const move = correctedHorizontal.addInPlace(correctedVertical)
 
         //clear y so that the character doesnt fly up, normalize for next step
@@ -117,6 +123,16 @@ export class Player extends TransformNode {
         //final movement that takes into consideration the inputs
         this._moveDirection = this._moveDirection.scaleInPlace(this._inputAmt * Player.PLAYER_SPEED)
 
+        //check if there is movement to determine if rotation is needed
+        const input = new Vector3(this._input.horizontalAxis, 0, this._input.verticalAxis) //along which axis is the direction
+        if (input.length() == 0) //if there's no input detected, prevent rotation and keep player in same rotation
+            return
+
+        //rotation based on input & the camera angle
+        let angle = Math.atan2(this._input.horizontalAxis, this._input.verticalAxis)
+        angle += this._camRoot.rotation.y
+        const targ = Quaternion.FromEulerAngles(0, angle, 0)
+        this.mesh.rotationQuaternion = Quaternion.Slerp(this.mesh.rotationQuaternion, targ, 10 * this._deltaTime)
     }
 
 }

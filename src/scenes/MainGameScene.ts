@@ -42,7 +42,6 @@ export class MainGameScene extends Scene {
             console.log('loaded ground')
             this.assets = this._loadCharacterAssets() //character
             await this._initializeGameAsync()
-            this.activeCamera = this._player.activatePlayerCamera()
         })
     }
 
@@ -64,6 +63,7 @@ export class MainGameScene extends Scene {
         //Create the player
         this._player = new Player(this.assets, this, shadowGenerator, this._input) //dont have inputs yet so we dont need to pass it in
 
+        this.activeCamera = this._player.activatePlayerCamera()
     }
 
     async loadEnvironment() {
