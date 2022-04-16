@@ -113,7 +113,6 @@ export default class MainScene {
 
     // SceneLoader.AppendAsync("./assets/babylonFiles", "example.babylon", this.scene).then((scene) => {
     //   // do something with the scene
-    //   console.log(scene)
     // })
 
     const mat = new StandardMaterial('mat', this.scene)
