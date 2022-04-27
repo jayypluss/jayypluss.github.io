@@ -7,15 +7,22 @@ export class PlayerInput {
     private horizontal: number
     private horizontalAxis: number
 
+    
+    //jumping and dashing
+    public jumpKeyDown: boolean = false;
+    public dashing: boolean = false;
+
     constructor(scene: Scene) {
         scene.actionManager = new ActionManager(scene)
 
         scene.actionManager.registerAction(new ExecuteCodeAction(ActionManager.OnKeyDownTrigger, (evt) => {
             this.inputMap[evt.sourceEvent.key] = evt.sourceEvent.type == "keydown"
+            console.log('keydown: ', evt.sourceEvent.key)
         }))
 
         scene.actionManager.registerAction(new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
             this.inputMap[evt.sourceEvent.key] = evt.sourceEvent.type == "keydown"
+            console.log('keyup: ', evt.sourceEvent.key)
         }))
 
         scene.onBeforeRenderObservable.add(() => {
@@ -24,11 +31,25 @@ export class PlayerInput {
     }
 
     private _updateFromKeyboard(): void {
-        if (this.inputMap["ArrowUp"]) {
+        //dash
+        if (this.inputMap["Shift"]) {
+            this.dashing = true;
+        } else {
+            this.dashing = false;
+        }
+
+        //Jump Checks (SPACE)
+        if (this.inputMap[" "]) {
+            this.jumpKeyDown = true;
+        } else {
+            this.jumpKeyDown = false;
+        }
+
+        if (this.inputMap["ArrowUp"] || this.inputMap["w"]) {
             this.vertical = Scalar.Lerp(this.vertical, 1, 0.2)
             this.verticalAxis = 1
 
-        } else if (this.inputMap["ArrowDown"]) {
+        } else if (this.inputMap["ArrowDown"] || this.inputMap["s"]) {
             this.vertical = Scalar.Lerp(this.vertical, -1, 0.2)
             this.verticalAxis = -1
         } else {
@@ -36,11 +57,11 @@ export class PlayerInput {
             this.verticalAxis = 0
         }
 
-        if (this.inputMap["ArrowLeft"]) {
+        if (this.inputMap["ArrowLeft"] || this.inputMap["a"]) {
             this.horizontal = Scalar.Lerp(this.horizontal, -1, 0.2)
             this.horizontalAxis = -1
 
-        } else if (this.inputMap["ArrowRight"]) {
+        } else if (this.inputMap["ArrowRight"] || this.inputMap["d"]) {
             this.horizontal = Scalar.Lerp(this.horizontal, 1, 0.2)
             this.horizontalAxis = 1
         }

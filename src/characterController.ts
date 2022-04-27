@@ -66,7 +66,7 @@ export class Player extends TransformNode {
         yTilt.parent = this._camRoot
 
         //our actual camera that's pointing at our root's position
-        this.camera = new UniversalCamera("cam", new Vector3(0, 0, -30), this.scene)
+        this.camera = new UniversalCamera("cam", new Vector3(0, 0, -120), this.scene)
         this.camera.lockedTarget = this._camRoot.position
         this.camera.fov = 0.47350045992678597
         this.camera.parent = yTilt
@@ -173,8 +173,17 @@ export class Player extends TransformNode {
         this._deltaTime = this.scene.getEngine().getDeltaTime() / 1000.0;
 
         if (!this._isGrounded()) {
-            this._gravity = this._gravity.addInPlace(Vector3.Up().scale(this._deltaTime * Player.GRAVITY));
-            this._grounded = false;
+            //if the body isnt grounded, check if it's on a slope and was either falling or walking onto it
+            if (this._checkSlope() && this._gravity.y <= 0) {
+                //if you are considered on a slope, you're able to jump and gravity wont affect you
+                this._gravity.y = 0;
+                this._jumpCount = 1;
+                this._grounded = true;
+            } else {
+                //keep applying gravity
+                this._gravity = this._gravity.addInPlace(Vector3.Up().scale(this._deltaTime * Player.GRAVITY));
+                this._grounded = false;
+            }
         }
         
         //limit the speed of gravity to the negative of the jump power
@@ -187,9 +196,68 @@ export class Player extends TransformNode {
             this._gravity.y = 0;
             this._grounded = true;
             this._lastGroundPos.copyFrom(this.mesh.position);
+
+            this._jumpCount = 2; //allow for jumping
         }
         
+        //Jump detection
+        if (this._input.jumpKeyDown && this._jumpCount > 0) {
+            this._gravity.y = Player.JUMP_FORCE;
+            this._jumpCount--;
+        }
 
+    }
+
+    
+
+    //https://www.babylonjs-playground.com/#FUK3S#8
+    //https://www.html5gamedevs.com/topic/7709-scenepick-a-mesh-that-is-enabled-but-not-visible/
+    //check whether a mesh is sloping based on the normal
+    private _checkSlope(): boolean {
+
+        //only check meshes that are pickable and enabled (specific for collision meshes that are invisible)
+        let predicate = function (mesh: Mesh) {
+            return mesh.isPickable && mesh.isEnabled();
+        }
+
+        //4 raycasts outward from center
+        let raycast = new Vector3(this.mesh.position.x, this.mesh.position.y + 0.5, this.mesh.position.z + .25);
+        let ray = new Ray(raycast, Vector3.Up().scale(-1), 1.5);
+        let pick = this.scene.pickWithRay(ray, predicate);
+
+        let raycast2 = new Vector3(this.mesh.position.x, this.mesh.position.y + 0.5, this.mesh.position.z - .25);
+        let ray2 = new Ray(raycast2, Vector3.Up().scale(-1), 1.5);
+        let pick2 = this.scene.pickWithRay(ray2, predicate);
+
+        let raycast3 = new Vector3(this.mesh.position.x + .25, this.mesh.position.y + 0.5, this.mesh.position.z);
+        let ray3 = new Ray(raycast3, Vector3.Up().scale(-1), 1.5);
+        let pick3 = this.scene.pickWithRay(ray3, predicate);
+
+        let raycast4 = new Vector3(this.mesh.position.x - .25, this.mesh.position.y + 0.5, this.mesh.position.z);
+        let ray4 = new Ray(raycast4, Vector3.Up().scale(-1), 1.5);
+        let pick4 = this.scene.pickWithRay(ray4, predicate);
+
+        if (pick.hit && !pick.getNormal().equals(Vector3.Up())) {
+            if(pick.pickedMesh.name.includes("stair")) { 
+                return true; 
+            }
+        } else if (pick2.hit && !pick2.getNormal().equals(Vector3.Up())) {
+            if(pick2.pickedMesh.name.includes("stair")) { 
+                return true; 
+            }
+        }
+        else if (pick3.hit && !pick3.getNormal().equals(Vector3.Up())) {
+            if(pick3.pickedMesh.name.includes("stair")) { 
+                return true; 
+            }
+        }
+        else if (pick4.hit && !pick4.getNormal().equals(Vector3.Up())) {
+            if(pick4.pickedMesh.name.includes("stair")) { 
+                return true; 
+            }
+        }
+        
+        return false;
     }
 
 }
