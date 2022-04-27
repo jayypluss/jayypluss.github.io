@@ -1,4 +1,4 @@
-import {Mesh, Quaternion, Scene, ShadowGenerator, TransformNode, UniversalCamera} from "@babylonjs/core"
+import {Mesh, Quaternion, Ray, Scene, ShadowGenerator, TransformNode, UniversalCamera} from "@babylonjs/core"
 import {Vector3} from "@babylonjs/core/Maths/math.vector"
 
 export class Player extends TransformNode {
@@ -14,6 +14,13 @@ export class Player extends TransformNode {
     private _h: number
     private _v: any
     private _inputAmt: number
+
+    
+    //gravity, ground detection, jumping
+    private _gravity: Vector3 = new Vector3();
+    private _lastGroundPos: Vector3 = Vector3.Zero(); // keep track of the last grounded position
+    private _grounded: boolean;
+    private _jumpCount: number = 1;
 
     //const values
     private static readonly PLAYER_SPEED: number = 0.45
@@ -82,9 +89,7 @@ export class Player extends TransformNode {
     //--GAME UPDATES--
     private _beforeRenderUpdate(): void {
         this._updateFromControls()
-        this.mesh.moveWithCollisions(this._moveDirection)
-        // this._updateGroundDetection();
-        // this._animatePlayer();
+        this._updateGroundDetection()
     }
 
     private _updateCamera(): void {
@@ -125,6 +130,7 @@ export class Player extends TransformNode {
 
         //check if there is movement to determine if rotation is needed
         const input = new Vector3(this._input.horizontalAxis, 0, this._input.verticalAxis) //along which axis is the direction
+        
         if (input.length() == 0) //if there's no input detected, prevent rotation and keep player in same rotation
             return
 
@@ -133,6 +139,57 @@ export class Player extends TransformNode {
         angle += this._camRoot.rotation.y
         const targ = Quaternion.FromEulerAngles(0, angle, 0)
         this.mesh.rotationQuaternion = Quaternion.Slerp(this.mesh.rotationQuaternion, targ, 10 * this._deltaTime)
+    }
+
+    private _floorRaycast(offsetx: number, offsetz: number, raycastlen: number): Vector3 {
+        //position the raycast from bottom center of mesh
+        let raycastFloorPos = new Vector3(this.mesh.position.x + offsetx, this.mesh.position.y + 0.5, this.mesh.position.z + offsetz);
+        let ray = new Ray(raycastFloorPos, Vector3.Up().scale(-1), raycastlen);
+
+        //defined which type of meshes should be pickable
+        let predicate = function (mesh: Mesh) {
+            return mesh.isPickable && mesh.isEnabled();
+        }
+
+        let pick = this.scene.pickWithRay(ray, predicate);
+
+        if (pick.hit) { //grounded
+            return pick.pickedPoint;
+        } else { //not grounded
+            return Vector3.Zero();
+        }
+    }
+
+    private _isGrounded(): boolean {
+        if (this._floorRaycast(0, 0, .6).equals(Vector3.Zero())) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    
+    private _updateGroundDetection(): void {
+        this._deltaTime = this.scene.getEngine().getDeltaTime() / 1000.0;
+
+        if (!this._isGrounded()) {
+            this._gravity = this._gravity.addInPlace(Vector3.Up().scale(this._deltaTime * Player.GRAVITY));
+            this._grounded = false;
+        }
+        
+        //limit the speed of gravity to the negative of the jump power
+        if (this._gravity.y < -Player.JUMP_FORCE) {
+            this._gravity.y = -Player.JUMP_FORCE;
+        }
+        this.mesh.moveWithCollisions(this._moveDirection.addInPlace(this._gravity));
+
+        if (this._isGrounded()) {
+            this._gravity.y = 0;
+            this._grounded = true;
+            this._lastGroundPos.copyFrom(this.mesh.position);
+        }
+        
+
     }
 
 }
