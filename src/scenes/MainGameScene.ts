@@ -7,14 +7,17 @@ import {
     MeshBuilder, PointLight,
     Quaternion,
     Scene,
+    SceneLoader,
     SceneOptions, ShadowGenerator,
     StandardMaterial
 } from "@babylonjs/core"
 import {Vector3} from "@babylonjs/core/Maths/math.vector"
 import '@babylonjs/inspector'
-import {Environment} from './environment'
+import {Environment} from '../environment'
 import {Player} from '../characterController'
 import {PlayerInput} from '../inputController'
+
+import playerGlb from '../../assets/meshes/player.glb'
 
 export class MainGameScene extends Scene {
     private _environment: Environment
@@ -36,14 +39,23 @@ export class MainGameScene extends Scene {
 
         })
 
-        this._environment =  new Environment(this)
-
-        this.loadEnvironment().then(async (ground) => {
-            console.log('loaded ground')
-            this.assets = this._loadCharacterAssets() //character
+        //--START LOADING AND SETTING UP THE GAME DURING THIS SCENE--
+        var finishedLoading = false;
+        this._setUpGame().then(async (res) => {
+            finishedLoading = true;
             await this._initializeGameAsync()
         })
     }
+
+    private async _setUpGame() { //async
+        //--CREATE ENVIRONMENT--
+        const environment = new Environment(this);
+        this._environment = environment;
+        //Load environment and character assets
+        await this._environment.load(); //environment
+        await this._loadCharacterAssets(); //character
+    }
+
 
     private async _initializeGameAsync(): Promise<void> {
         //temporary light to light the entire scene
@@ -70,39 +82,45 @@ export class MainGameScene extends Scene {
         return this._environment.load() //environment
     }
 
-    private _loadCharacterAssets() {
-        //collision mesh
-        const outer = MeshBuilder.CreateBox("outer", { width: 2, depth: 1, height: 3 }, this)
-        outer.isVisible = false
-        outer.isPickable = false
-        outer.checkCollisions = true
+    //load the character model
+    private async _loadCharacterAssets(): Promise<any> {
 
-        //move origin of box collider to the bottom of the mesh (to match imported player mesh)
-        outer.bakeTransformIntoVertices(Matrix.Translation(0, 1.5, 0))
+        async function loadCharacter() {
+            //collision mesh
+            const outer = MeshBuilder.CreateBox("outer", { width: 2, depth: 1, height: 3 }, this)
+            outer.isVisible = false
+            outer.isPickable = false
+            outer.checkCollisions = true
 
-        //for collisions
-        outer.ellipsoid = new Vector3(1, 1.5, 1)
-        outer.ellipsoidOffset = new Vector3(0, 1.5, 0)
+            //move origin of box collider to the bottom of the mesh (to match player mesh)
+            outer.bakeTransformIntoVertices(Matrix.Translation(0, 1.5, 0))
+            //for collisions
+            outer.ellipsoid = new Vector3(1, 1.5, 1)
+            outer.ellipsoidOffset = new Vector3(0, 1.5, 0)
 
-        outer.rotationQuaternion = new Quaternion(0, 1, 0, 0) // rotate the player mesh 180 since we want to see the back of the player
-
-        const box = MeshBuilder.CreateBox("Small1", { width: 0.5, depth: 0.5, height: 0.25, faceColors: [new Color4(0, 0, 0, 1), new Color4(0, 0, 0, 1), new Color4(0, 0, 0, 1), new Color4(0, 0, 0, 1), new Color4(0, 0, 0, 1), new Color4(0, 0, 0, 1)] }, this)
-        box.position.y = 1.5
-        box.position.z = 1
-
-        const body = Mesh.CreateCylinder("body", 3, 2, 2, 0, 0, this)
-        const bodymtl = new StandardMaterial("red", this)
-        bodymtl.diffuseColor = new Color3(0.8, 0.5, 0.5)
-        body.material = bodymtl
-        body.isPickable = false
-        body.bakeTransformIntoVertices(Matrix.Translation(0, 1.5, 0)) // simulates the imported mesh's origin
-
-        //parent the meshes
-        box.parent = body
-        body.parent = outer
-
-        return {
-            mesh: outer as Mesh
+            outer.rotationQuaternion = new Quaternion(0, 1, 0, 0) // rotate the player mesh 180 since we want to see the back of the player
+            
+            //--IMPORTING MESH--
+            return SceneLoader.ImportMeshAsync('', '', playerGlb, this, undefined, '.glb').then((result) =>{
+                const root = result.meshes[0]
+                //body is our actual player mesh
+                const body = root
+                body.parent = outer
+                body.isPickable = false
+                body.getChildMeshes().forEach(m => {
+                    m.isPickable = false
+                })
+                
+                //return the mesh and animations
+                return {
+                    mesh: outer as Mesh,
+                    animationGroups: result.animationGroups
+                }
+            });
         }
+
+        return loadCharacter().then(assets => {
+            this.assets = assets
+        })
     }
 }

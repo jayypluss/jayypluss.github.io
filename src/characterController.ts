@@ -42,18 +42,21 @@ export class Player extends TransformNode {
 
 
     constructor(assets: any, scene: Scene, shadowGenerator: ShadowGenerator, input?: any) {
-        super("player", scene)
-        this.scene = scene
+        super("player", scene);
+        this.scene = scene;
 
+        //camera
+        this._setupPlayerCamera();
+        this.mesh = assets.mesh;
+        this.mesh.parent = this;
 
-        this.mesh = assets.mesh
-        this.mesh.parent = this
+        this.scene.getLightByName("sparklight").parent = this.scene.getTransformNodeByName("Empty");
+
 
         shadowGenerator.addShadowCaster(assets.mesh) //the player mesh will cast shadows
 
         this._input = input //inputs we will get from inputController.ts
 
-        this._setupPlayerCamera()
     }
 
     private _setupPlayerCamera(): UniversalCamera {
@@ -144,7 +147,6 @@ export class Player extends TransformNode {
         
         //clear y so that the character doesnt fly up, normalize for next step, taking into account whether we've DASHED or not
         this._moveDirection = new Vector3((move).normalize().x * dashFactor, 0, (move).normalize().z * dashFactor)
-        
 
         //clamp the input value so that diagonal movement isn't twice as fast
         const inputMag = Math.abs(this._h) + Math.abs(this._v)

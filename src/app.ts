@@ -35,7 +35,9 @@ export class App {    // General Entire Application
             this._scene.dispose()
             this._scene = mainGameScene
             this._state = GameState.GAME
-            this._scene.getMeshByName("outer").position = new Vector3(0, 3, 0)
+            
+            //Actions to complete once the game loop is setup
+            this._scene.getMeshByName("outer").position = this._scene.getTransformNodeByName("startPosition").getAbsolutePosition() //move the player to the start positio
         })
 
         // run the main render loop

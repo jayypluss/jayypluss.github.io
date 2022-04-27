@@ -17,12 +17,12 @@ export class PlayerInput {
 
         scene.actionManager.registerAction(new ExecuteCodeAction(ActionManager.OnKeyDownTrigger, (evt) => {
             this.inputMap[evt.sourceEvent.key] = evt.sourceEvent.type == "keydown"
-            console.log('keydown: ', evt.sourceEvent.key)
+            // console.log('keydown: ', evt.sourceEvent.key)
         }))
 
         scene.actionManager.registerAction(new ExecuteCodeAction(ActionManager.OnKeyUpTrigger, (evt) => {
             this.inputMap[evt.sourceEvent.key] = evt.sourceEvent.type == "keydown"
-            console.log('keyup: ', evt.sourceEvent.key)
+            // console.log('keyup: ', evt.sourceEvent.key)
         }))
 
         scene.onBeforeRenderObservable.add(() => {
@@ -45,11 +45,11 @@ export class PlayerInput {
             this.jumpKeyDown = false;
         }
 
-        if (this.inputMap["ArrowUp"] || this.inputMap["w"]) {
+        if (this.inputMap["ArrowUp"] || this.inputMap["w"] || this.inputMap["W"]) {
             this.vertical = Scalar.Lerp(this.vertical, 1, 0.2)
             this.verticalAxis = 1
 
-        } else if (this.inputMap["ArrowDown"] || this.inputMap["s"]) {
+        } else if (this.inputMap["ArrowDown"] || this.inputMap["s"] || this.inputMap["S"]) {
             this.vertical = Scalar.Lerp(this.vertical, -1, 0.2)
             this.verticalAxis = -1
         } else {
@@ -57,11 +57,11 @@ export class PlayerInput {
             this.verticalAxis = 0
         }
 
-        if (this.inputMap["ArrowLeft"] || this.inputMap["a"]) {
+        if (this.inputMap["ArrowLeft"] || this.inputMap["a"] || this.inputMap["A"]) {
             this.horizontal = Scalar.Lerp(this.horizontal, -1, 0.2)
             this.horizontalAxis = -1
 
-        } else if (this.inputMap["ArrowRight"] || this.inputMap["d"]) {
+        } else if (this.inputMap["ArrowRight"] || this.inputMap["d"] || this.inputMap["D"]) {
             this.horizontal = Scalar.Lerp(this.horizontal, 1, 0.2)
             this.horizontalAxis = 1
         }
