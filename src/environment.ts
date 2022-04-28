@@ -1,10 +1,12 @@
-import {Color3, Mesh, Scene, SceneLoader, StandardMaterial, Texture} from '@babylonjs/core'
+import {AbstractMesh, ActionManager, Color3, ExecuteCodeAction, Mesh, Scene, SceneLoader, SetValueAction, StandardMaterial, Texture} from '@babylonjs/core'
 import {Vector3} from '@babylonjs/core/Maths/math.vector'
 
-import envSettingGlb from '../assets/meshes/envSetting.glb'
+import envSettingGlb from '../assets/meshes/gallery_playground_01_cut_through_triggers.glb'
+// import envSettingGlb from '../assets/meshes/envSetting.glb'
 
 export class Environment {
     private _scene: Scene
+    public collisionMeshes: AbstractMesh[] = []
 
     constructor(scene: Scene) {
         this._scene = scene
@@ -15,29 +17,19 @@ export class Environment {
         
         //Loop through all environment meshes that were imported
         assets.allMeshes.forEach(m => {
-            m.receiveShadows = true;
-            m.checkCollisions = true;
+            m.receiveShadows = true
+            m.checkCollisions = true
 
             if (m.name == "ground") { //dont check for collisions, dont allow for raycasting to detect it(cant land on it)
-                m.checkCollisions = false;
-                m.isPickable = false;
+                m.checkCollisions = false
+                m.isPickable = false
             }
 
-            //areas that will use box collisions
-            if (m.name.includes("stairs") || m.name == "cityentranceground" || m.name == "fishingground.001" || m.name.includes("lilyflwr")) {
-                m.checkCollisions = false;
-                m.isPickable = false;
-            }
-            //collision meshes
-            if (m.name.includes("collision")) {
-                m.isVisible = false;
-                m.isPickable = true;
-            }
-            //trigger meshes
-            if (m.name.includes("Trigger")) {
-                m.isVisible = false;
-                m.isPickable = false;
-                m.checkCollisions = false;
+            if (m.name.includes("trigger")) {
+                m.isVisible = false
+                m.isPickable = false
+                m.checkCollisions = false
+                this.collisionMeshes.push(m)
             }
         });
 
@@ -62,12 +54,13 @@ export class Environment {
 
 
         // return ground
+
+        return assets
     }
 
     async _loadAsset() {
         //loads game environment
         const result = await SceneLoader.ImportMeshAsync('', '', envSettingGlb, this._scene, undefined, '.glb');
-
         let env = result.meshes[0];
         let allMeshes = env.getChildMeshes();
 

@@ -1,6 +1,9 @@
 import {
+    AbstractMesh,
+    ActionManager,
     Color3, Color4,
     Engine,
+    ExecuteCodeAction,
     HemisphericLight,
     Matrix,
     Mesh,
@@ -54,6 +57,41 @@ export class MainGameScene extends Scene {
         //Load environment and character assets
         await this._environment.load(); //environment
         await this._loadCharacterAssets(); //character
+        
+        this._environment.collisionMeshes.forEach((collisionMesh: AbstractMesh) => {
+            collisionMesh.actionManager = new ActionManager(this)
+            
+            collisionMesh.actionManager.registerAction(
+                new ExecuteCodeAction(
+                    {
+                        trigger: ActionManager.OnIntersectionEnterTrigger, 
+                        parameter: { 
+                            mesh: this.assets.mesh, 
+                            usePreciseIntersection: true
+                        }
+                    }, 
+                    () => {
+                        console.log('Player entered trigger: ', collisionMesh.name)
+                    }
+                )
+            )
+
+            collisionMesh.actionManager.registerAction(
+                new ExecuteCodeAction(
+                    {
+                        trigger: ActionManager.OnIntersectionExitTrigger, 
+                        parameter: { 
+                            mesh: this.assets.mesh, 
+                            usePreciseIntersection: true
+                        }
+                    }, 
+                    () => {
+                        console.log('Player exited trigger: ', collisionMesh.name)
+                    }
+                )
+            )
+        })
+        
     }
 
 
@@ -77,11 +115,7 @@ export class MainGameScene extends Scene {
 
         this.activeCamera = this._player.activatePlayerCamera()
     }
-
-    async loadEnvironment() {
-        return this._environment.load() //environment
-    }
-
+    
     //load the character model
     private async _loadCharacterAssets(): Promise<any> {
 
@@ -110,7 +144,11 @@ export class MainGameScene extends Scene {
                 body.getChildMeshes().forEach(m => {
                     m.isPickable = false
                 })
-                
+
+                result.animationGroups[1].loopAnimation = true
+                result.animationGroups[1].play(true)
+                result.animationGroups[4].loopAnimation = false
+
                 //return the mesh and animations
                 return {
                     mesh: outer as Mesh,
