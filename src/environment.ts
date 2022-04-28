@@ -1,12 +1,13 @@
-import {AbstractMesh, ActionManager, Color3, ExecuteCodeAction, Mesh, Scene, SceneLoader, SetValueAction, StandardMaterial, Texture} from '@babylonjs/core'
+import {AbstractMesh, ActionManager, Color3, ExecuteCodeAction, Material, Mesh, Scene, SceneLoader, SetValueAction, StandardMaterial, Texture} from '@babylonjs/core'
 import {Vector3} from '@babylonjs/core/Maths/math.vector'
 
-import envSettingGlb from '../assets/meshes/gallery_playground_01_cut_through_triggers.glb'
+import envSettingGlb from '../assets/meshes/gallery_playground_triggers.glb'
 // import envSettingGlb from '../assets/meshes/envSetting.glb'
 
 export class Environment {
     private _scene: Scene
     public collisionMeshes: AbstractMesh[] = []
+    public galleries: AbstractMesh[] = []
 
     constructor(scene: Scene) {
         this._scene = scene
@@ -14,6 +15,20 @@ export class Environment {
 
     public async load() {
         const assets = await this._loadAsset();
+        
+        const galleryMaterial = new StandardMaterial('gallery_material', this._scene)
+        galleryMaterial.alpha = 0.4
+
+        
+        const galleryMaterialFaded = new StandardMaterial('gallery_material_faded', this._scene)
+        galleryMaterialFaded.alpha = 0.2
+
+
+        // galleryMaterial.diffuseColor = new Color3(0, 0, 0)
+        // galleryMaterial.diffuseColor = new Color3(0, 0, 0)
+        // galleryMaterial.specularColor = new Color3(0, 0, 0)
+        // galleryMaterial.emissiveColor = new Color3(.98,.56, .37)
+        // galleryMaterial.ambientColor = new Color3(.98,.56, .37)
         
         //Loop through all environment meshes that were imported
         assets.allMeshes.forEach(m => {
@@ -25,11 +40,23 @@ export class Environment {
                 m.isPickable = false
             }
 
+            if (m.name.includes("gallery")) {
+                m.material = galleryMaterial
+                this.galleries.push(m)
+            }
+
             if (m.name.includes("trigger")) {
                 m.isVisible = false
                 m.isPickable = false
                 m.checkCollisions = false
+
                 this.collisionMeshes.push(m)
+            }
+
+            if (m.name.includes('g_') && !m.name.includes('trigger') && !m.name.includes('title')) {
+                m.isVisible = false
+                m.isPickable = true
+                m.checkCollisions = false
             }
         });
 

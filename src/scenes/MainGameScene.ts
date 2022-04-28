@@ -11,8 +11,7 @@ import {
     Quaternion,
     Scene,
     SceneLoader,
-    SceneOptions, ShadowGenerator,
-    StandardMaterial
+    SceneOptions, ShadowGenerator, StandardMaterial,
 } from "@babylonjs/core"
 import {Vector3} from "@babylonjs/core/Maths/math.vector"
 import '@babylonjs/inspector'
@@ -27,6 +26,7 @@ export class MainGameScene extends Scene {
     private assets: any
     private _player: Player
     private _input: PlayerInput
+    private galleryPlayerIsInside: string = ""
 
     constructor(engine: Engine, options?: SceneOptions) {
         super(engine, options)
@@ -71,7 +71,23 @@ export class MainGameScene extends Scene {
                         }
                     }, 
                     () => {
-                        console.log('Player entered trigger: ', collisionMesh.name)
+                        // g_003_trigger
+                        console.log('Player entered trigger Mesh: ', collisionMesh.name)
+                        console.log('Collision Mesh parent: ', collisionMesh.parent.name)
+
+                        if (collisionMesh.name.includes('inside_trigger')) {
+                            this.galleryPlayerIsInside = collisionMesh.parent.name
+                        }
+                        
+                        const parent = this.getMeshByName(collisionMesh.parent.name)
+                        parent.material = this.getMaterialByName('gallery_material_faded')
+                        parent?.getChildMeshes()?.forEach((childMesh: AbstractMesh) => {
+
+                            if (childMesh.name.includes('g_') && !childMesh.name.includes('trigger') && !childMesh.name.includes('title')) {
+                                childMesh.isVisible = true
+                            }
+
+                        })
                     }
                 )
             )
@@ -86,6 +102,24 @@ export class MainGameScene extends Scene {
                         }
                     }, 
                     () => {
+                        if (collisionMesh.name.includes('inside_trigger')) {
+                            this.galleryPlayerIsInside = ''
+                        }
+
+                        if (collisionMesh.name.includes('front_trigger') && this.galleryPlayerIsInside == '') {
+
+                            const parent = this.getMeshByName(collisionMesh.parent.name)
+                            parent.material = this.getMaterialByName('gallery_material')
+                            parent?.getChildMeshes()?.forEach((childMesh: AbstractMesh) => {
+    
+                                if (childMesh.name.includes('g_') && !childMesh.name.includes('trigger') && !childMesh.name.includes('title')) {
+                                    childMesh.isVisible = false
+                                }
+    
+                            })
+    
+                        }
+
                         console.log('Player exited trigger: ', collisionMesh.name)
                     }
                 )
