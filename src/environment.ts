@@ -1,4 +1,4 @@
-import {AbstractMesh, ActionManager, Color3, ExecuteCodeAction, Material, Mesh, Scene, SceneLoader, SetValueAction, StandardMaterial, Texture} from '@babylonjs/core'
+import {AbstractMesh, ActionManager, Color3, ExecuteCodeAction, Material, Mesh, PBRMaterial, Scene, SceneLoader, SetValueAction, StandardMaterial, Texture} from '@babylonjs/core'
 import {Vector3} from '@babylonjs/core/Maths/math.vector'
 
 import envSettingGlb from '../assets/meshes/gallery_playground_triggers.glb'
@@ -23,21 +23,20 @@ export class Environment {
         const galleryMaterialFaded = new StandardMaterial('gallery_material_faded', this._scene)
         galleryMaterialFaded.alpha = 0.2
 
-
-        // galleryMaterial.diffuseColor = new Color3(0, 0, 0)
-        // galleryMaterial.diffuseColor = new Color3(0, 0, 0)
-        // galleryMaterial.specularColor = new Color3(0, 0, 0)
-        // galleryMaterial.emissiveColor = new Color3(.98,.56, .37)
-        // galleryMaterial.ambientColor = new Color3(.98,.56, .37)
+        
+        const groundMaterial = new StandardMaterial('ground_material', this._scene)
+        groundMaterial.emissiveColor = new Color3(0.224, 0.404, 0.231)
+        groundMaterial.diffuseColor = new Color3(0, 0, 0)
+        groundMaterial.specularColor = new Color3(0, 0, 0)
+        // groundMaterial.ambientColor = new Color3(.98,.56, .37)
         
         //Loop through all environment meshes that were imported
         assets.allMeshes.forEach(m => {
             m.receiveShadows = true
             m.checkCollisions = true
 
-            if (m.name == "ground") { //dont check for collisions, dont allow for raycasting to detect it(cant land on it)
-                m.checkCollisions = false
-                m.isPickable = false
+            if (m.name == "floor") {
+                m.material = groundMaterial
             }
 
             if (m.name.includes("gallery")) {
