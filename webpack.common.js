@@ -1,11 +1,11 @@
-const path = require("path");
-const fs = require("fs");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const { CleanWebpackPlugin } = require("clean-webpack-plugin");
+const path = require("path")
+const fs = require("fs")
+const HtmlWebpackPlugin = require("html-webpack-plugin")
+const { CleanWebpackPlugin } = require("clean-webpack-plugin")
 const Dotenv = require('dotenv-webpack')
 
 // App directory
-const appDirectory = fs.realpathSync(process.cwd());
+const appDirectory = fs.realpathSync(process.cwd())
 
 module.exports = {
   entry: path.resolve(appDirectory, "src/index.ts"),
@@ -37,14 +37,7 @@ module.exports = {
       },
       {
         test: /\.(png|jpg|gif|env|glb|stl)$/i,
-        use: [
-          {
-            loader: "url-loader",
-            options: {
-              limit: 8192,
-            },
-          },
-        ],
+        type: 'asset/resource',
       },
       {
         test: /\.css$/i,
@@ -58,6 +51,9 @@ module.exports = {
       inject: true,
       template: path.resolve(appDirectory, "src/index.html"),
     }),
-    new Dotenv()
+    new Dotenv({
+      systemvars: true,
+      ignoreStub: true
+    })
   ],
 };

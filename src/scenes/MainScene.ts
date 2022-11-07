@@ -17,6 +17,8 @@ import '@babylonjs/loaders'
 
 const loaderGif = require('../../assets/images/loader.gif')
 
+import dodecahedronImage from '../../assets/images/textures/jayypluss_dodecaedron_flipped.png'
+
 export default class MainScene {
   private canvas: HTMLCanvasElement
   private engine: Engine
@@ -92,6 +94,8 @@ export default class MainScene {
         if (pickResult.hit) {
           const pickedMesh = pickResult.pickedMesh
           const pickedPoint = pickResult.pickedPoint
+          const faceId = pickResult.faceId
+          // if (this.scene.activeCamera instanceof ArcRotateCamera) this.scene.activeCamera.setTarget(faceId)
           console.log('Picked mesh: ', pickedMesh, ' at point: ', pickedPoint)
         }
     })
@@ -100,7 +104,16 @@ export default class MainScene {
 
   private mountScene() {
     const mat = new StandardMaterial('mat', this.scene)
-    mat.diffuseTexture = new Texture('https://assets.babylonjs.com/environments/spriteAtlas.png', this.scene)
+    // mat.diffuseTexture = new Texture('https://assets.babylonjs.com/environments/spriteAtlas.png', this.scene)
+
+    // const url = new URL(
+    //         'public/dodecaedron.png',
+    //     document.baseURI || self.location.href)
+
+    console.log(dodecahedronImage)
+
+    mat.diffuseTexture = new Texture(dodecahedronImage, this.scene)
+    mat.diffuseTexture.coordinatesMode = 6
 
     const columns = 6
     const rows = 4
@@ -108,7 +121,9 @@ export default class MainScene {
     //Face UVs
     const faceUV = []
     for (let i = 0; i < 12; i++) {
-      faceUV[i] = new Vector4((i % 6) / columns, Math.floor(i / 6) / rows, (1 + i % 6) / columns, 1 / rows + Math.floor(i / 6) / rows)
+      const vector = new Vector4((i % 6) / columns, Math.floor(i / 6) / rows, (1 + i % 6) / columns, 1 / rows + Math.floor(i / 6) / rows)
+      console.log('vector ', i, ': ', vector)
+      faceUV[i] = vector
     }
 
     const dodecahedron = Mesh.CreatePolyhedron('dodecahedron', {type: 2, faceUV: faceUV}, this.scene)
